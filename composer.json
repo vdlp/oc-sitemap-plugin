@@ -1,0 +1,23 @@
+{
+    "name": "vdlp/oc-sitemap-plugin",
+    "description": "A sitemap.xml generator for October CMS",
+    "type": "october-plugin",
+    "license": "proprietary",
+    "authors": [
+        {
+            "name": "Van der Let & Partners",
+            "email": "octobercms@vdlp.nl"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "php": ">=7.1"
+    },
+    "archive": {
+        "exclude": [
+            ".gitignore",
+            ".gitlab-ci.yml",
+            ".idea/"
+        ]
+    }
+}
