@@ -20,6 +20,9 @@ final class SitemapSubscriber implements EventSubscriber
      */
     public function subscribe(Dispatcher $dispatcher): void
     {
-        $dispatcher->listen(SitemapGenerator::INVALIDATE_CACHE_EVENT, InvalidateSitemapCache::class);
+        $dispatcher->listen(
+            SitemapGenerator::INVALIDATE_CACHE_EVENT,
+            InvalidateSitemapCache::class
+        );
     }
 }
