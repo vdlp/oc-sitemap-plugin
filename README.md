@@ -2,6 +2,12 @@
 
 This plugin allows developers to create a sitemap.xml using a sitemap definition generator.
 
+## Requirements
+
+- PHP 7.1 or higher
+- This plugin requires the `Vdlp.Sitemap` plugin. 
+- October CMS (preferably the latest version).
+
 ## Usage
 
 ### Sitemap definitions generator
@@ -140,3 +146,11 @@ You can also cache the sitemap forever.
 VDLP_SITEMAP_CACHE_TIME = 60
 VDLP_SITEMAP_CACHE_FOREVER = false
 ```
+
+## Issues
+
+If you have issues using this plugin. Please create an issue on GitHub or contact us at [octobercms@vdlp.nl]().
+
+## Contribution
+
+Any help is appreciated. Or feel free to create a Pull Request on GitHub.
