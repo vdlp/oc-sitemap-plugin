@@ -2,7 +2,7 @@
     "name": "vdlp/oc-sitemap-plugin",
     "description": "A sitemap.xml generator for October CMS",
     "type": "october-plugin",
-    "license": "proprietary",
+    "license": "GPL-2.0",
     "authors": [
         {
             "name": "Van der Let & Partners",
