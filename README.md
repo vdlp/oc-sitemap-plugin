@@ -1,6 +1,20 @@
-# VDLP Sitemap plugin
+<p align="center">
+	<img height="60px" width="60px" src="https://plugins.vdlp.nl/octobercms/icons/Vdlp.Sitemap.svg">
+	<h1 align="center">Vdlp.Sitemap</h1>
+</p>
 
-This plugin allows developers to create a sitemap.xml using a sitemap definition generator.
+<p align="center">
+	<em>This plugin allows developers to create a sitemap.xml using a sitemap definition generator.</em>
+</p>
+
+<p align="center">
+	<img src="https://badgen.net/packagist/php/vdlp/oc-sitemap-plugin">
+	<img src="https://badgen.net/packagist/license/vdlp/oc-sitemap-plugin">
+	<img src="https://badgen.net/packagist/v/vdlp/oc-sitemap-plugin/latest">
+	<img src="https://badgen.net/packagist/dt/vdlp/oc-sitemap-plugin">
+	<img src="https://badgen.net/badge/cms/October%20CMS">
+	<img src="https://badgen.net/badge/type/plugin">
+</p>
 
 ## Requirements
 

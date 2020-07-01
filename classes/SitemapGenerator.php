@@ -195,10 +195,23 @@ final class SitemapGenerator implements Contracts\SitemapGenerator
         /** @var Dto\Definition $definition */
         foreach ($definitions->getItems() as $definition) {
             $xml = '<url>';
-            $xml .= '<loc>' . $definition->getUrl() .'</loc>';
-            $xml .= '<lastmod>' . $definition->getModifiedAt() . '</lastmod>';
-            $xml .= '<priority>' . $definition->getPriorityFloat() . '</priority>';
-            $xml .= '<changefreq>' . $definition->getChangeFrequency() . '</changefreq>';
+
+            if ($definition->getUrl()) {
+                $xml .= '<loc>' . $definition->getUrl() .'</loc>';
+            }
+
+            if ($definition->getModifiedAt()) {
+                $xml .= '<lastmod>' . $definition->getModifiedAt()->toAtomString() . '</lastmod>';
+            }
+
+            if ($definition->getPriorityFloat()) {
+                $xml .= '<priority>' . $definition->getPriorityFloat() . '</priority>';
+            }
+
+            if ($definition->getChangeFrequency()) {
+                $xml .= '<changefreq>' . $definition->getChangeFrequency() . '</changefreq>';
+            }
+
             $xml .= '</url>';
 
             fwrite($file, $xml);
