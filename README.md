@@ -11,9 +11,9 @@
 	<img src="https://badgen.net/packagist/php/vdlp/oc-sitemap-plugin">
 	<img src="https://badgen.net/packagist/license/vdlp/oc-sitemap-plugin">
 	<img src="https://badgen.net/packagist/v/vdlp/oc-sitemap-plugin/latest">
-	<img src="https://badgen.net/packagist/dt/vdlp/oc-sitemap-plugin">
 	<img src="https://badgen.net/badge/cms/October%20CMS">
 	<img src="https://badgen.net/badge/type/plugin">
+	<img src="https://plugins.vdlp.nl/octobercms/badge/installations.php?plugin=vdlp-sitemap">
 </p>
 
 ## Requirements
