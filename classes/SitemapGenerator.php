@@ -13,11 +13,6 @@ use Vdlp\Sitemap\Classes\Dto;
 use Vdlp\Sitemap\Classes\Exceptions\DtoNotFound;
 use Vdlp\Sitemap\Classes\Exceptions\InvalidGenerator;
 
-/**
- * Class SitemapGenerator
- *
- * @package Vdlp\Sitemap\Classes
- */
 final class SitemapGenerator implements Contracts\SitemapGenerator
 {
     private const CACHE_KEY_SITEMAP = 'vdlp_sitemap_cache';
@@ -44,10 +39,6 @@ final class SitemapGenerator implements Contracts\SitemapGenerator
      */
     private $cacheForever;
 
-    /**
-     * @param Repository $cache
-     * @param Dispatcher $event
-     */
     public function __construct(Repository $cache, Dispatcher $event)
     {
         $this->cache = $cache;
@@ -56,16 +47,12 @@ final class SitemapGenerator implements Contracts\SitemapGenerator
         $this->cacheForever = config('vdlp.sitemap::sitemap_cache_forever', false);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function invalidateCache(): bool
     {
         return $this->invalidateSitemapCache() && $this->invalidateDefinitionsCache();
     }
 
     /**
-     * {@inheritDoc}
      * @throws RuntimeException
      */
     public function generate(): void
@@ -80,9 +67,6 @@ final class SitemapGenerator implements Contracts\SitemapGenerator
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function output(): void
     {
         header('Content-Type: application/xml');
@@ -96,9 +80,6 @@ final class SitemapGenerator implements Contracts\SitemapGenerator
         exit;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function updateDefinition(Dto\Definition $definition, ?string $oldUrl = null): void
     {
         $definitions = $this->rememberDefinitionsFromCache();
@@ -128,9 +109,6 @@ final class SitemapGenerator implements Contracts\SitemapGenerator
         $this->invalidateSitemapCache();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function addDefinition(Dto\Definition $definition): void
     {
         if (!$this->allowAdd($this->getExcludeUrls(), $definition)) {
@@ -143,9 +121,6 @@ final class SitemapGenerator implements Contracts\SitemapGenerator
         $this->invalidateSitemapCache();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function updateOrAddDefinition(Dto\Definition $definition, ?string $oldUrl = null): void
     {
         try {
@@ -155,9 +130,6 @@ final class SitemapGenerator implements Contracts\SitemapGenerator
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function deleteDefinition(string $url): void
     {
         $definitions = $this->rememberDefinitionsFromCache();
@@ -167,9 +139,6 @@ final class SitemapGenerator implements Contracts\SitemapGenerator
     }
 
     /**
-     * @param Dto\Definitions $definitions
-     * @param string $path
-     * @return void
      * @throws RuntimeException
      */
     private function createXmlFile(Dto\Definitions $definitions, string $path): void
@@ -209,9 +178,7 @@ final class SitemapGenerator implements Contracts\SitemapGenerator
     }
 
     /**
-     * @return Dto\Definitions
-     * @throws InvalidGenerator
-     * @throws Exceptions\DtoNotAccepted
+     * @throws InvalidGenerator|Exceptions\DtoNotAccepted
      */
     private function getDefinitions(): Dto\Definitions
     {
@@ -244,36 +211,23 @@ final class SitemapGenerator implements Contracts\SitemapGenerator
         return $definitions;
     }
 
-    /**
-     * @param string[] $excludeUrls
-     * @param Dto\Definition $definition
-     * @return bool
-     */
     private function allowAdd(array $excludeUrls, Dto\Definition $definition): bool
     {
         return !in_array($definition->getUrl(), $excludeUrls, true);
     }
 
-    /**
-     * @return string[]
-     */
     private function getExcludeUrls(): array
     {
         return $this->flattenArray($this->event->dispatch(self::EXCLUDE_URLS_EVENT));
     }
 
-    /**
-     * Flattens multi-dimensional array
-     *
-     * @param array $array
-     * @return array
-     */
     private function flattenArray(array $array): array
     {
         $flatArray = [];
 
         foreach ($array as $key => $value) {
             if (is_array($value)) {
+                /** @noinspection SlowArrayOperationsInLoopInspection */
                 $flatArray = array_merge($flatArray, array_flatten($value));
             } else {
                 $flatArray[$key] = $value;
@@ -283,11 +237,6 @@ final class SitemapGenerator implements Contracts\SitemapGenerator
         return $flatArray;
     }
 
-    /**
-     * @param string $key
-     * @param $value
-     * @return void
-     */
     private function updateCache(string $key, $value): void
     {
         if ($this->cacheForever) {
@@ -297,9 +246,6 @@ final class SitemapGenerator implements Contracts\SitemapGenerator
         $this->cache->put($key, $value, $this->cacheTime);
     }
 
-    /**
-     * @return Dto\Definitions
-     */
     private function rememberDefinitionsFromCache(): Dto\Definitions
     {
         return $this->rememberFromCache(self::CACHE_DEFINITIONS, function () {
@@ -307,11 +253,6 @@ final class SitemapGenerator implements Contracts\SitemapGenerator
         });
     }
 
-    /**
-     * @param string $key
-     * @param Closure $closure
-     * @return mixed
-     */
     private function rememberFromCache(string $key, Closure $closure)
     {
         if ($this->cacheForever) {
@@ -321,17 +262,11 @@ final class SitemapGenerator implements Contracts\SitemapGenerator
         return $this->cache->remember($key, $this->cacheTime, $closure);
     }
 
-    /**
-     * @return bool
-     */
     private function invalidateSitemapCache(): bool
     {
         return $this->cache->forget(self::CACHE_KEY_SITEMAP);
     }
 
-    /**
-     * @return bool
-     */
     private function invalidateDefinitionsCache(): bool
     {
         return $this->cache->forget(self::CACHE_DEFINITIONS);

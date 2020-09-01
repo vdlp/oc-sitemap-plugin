@@ -11,16 +11,8 @@ use System\Classes\PluginBase;
 use Vdlp\Sitemap\Classes\EventSubscribers;
 use Vdlp\Sitemap\ServiceProviders;
 
-/**
- * Class Plugin
- *
- * @package Vdlp\Sitemap
- */
 class Plugin extends PluginBase
 {
-    /**
-     * {@inheritdoc}
-     */
     public function pluginDetails(): array
     {
         return [
@@ -31,9 +23,6 @@ class Plugin extends PluginBase
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function register(): void
     {
         $this->app->register(ServiceProviders\SitemapServiceProvider::class);

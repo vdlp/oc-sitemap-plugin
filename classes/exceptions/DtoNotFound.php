@@ -7,11 +7,6 @@ namespace Vdlp\Sitemap\Classes\Exceptions;
 use InvalidArgumentException;
 use Throwable;
 
-/**
- * Class DtoNotFound
- *
- * @package Vdlp\Sitemap\Classes\Dto\Exceptions
- */
 final class DtoNotFound extends InvalidArgumentException
 {
     /**
