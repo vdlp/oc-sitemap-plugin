@@ -7,11 +7,6 @@ namespace Vdlp\Sitemap\Classes\Exceptions;
 use InvalidArgumentException;
 use Throwable;
 
-/**
- * Class InvalidPriority
- *
- * @package Vdlp\Sitemap\Classes\Exceptions
- */
 final class InvalidPriority extends InvalidArgumentException
 {
     /**

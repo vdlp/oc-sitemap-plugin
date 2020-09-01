@@ -8,11 +8,6 @@ use Countable;
 use Vdlp\Sitemap\Classes\Contracts;
 use Vdlp\Sitemap\Classes\Exceptions\DtoNotAccepted;
 
-/**
- * Class Collection
- *
- * @package Vdlp\Sitemap\Classes\Dto
- */
 abstract class Collection implements Contracts\DtoCollection, Countable
 {
     /**
@@ -33,9 +28,6 @@ abstract class Collection implements Contracts\DtoCollection, Countable
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     abstract public function addItem(Contracts\Dto $item): void;
 
     /**
@@ -46,9 +38,6 @@ abstract class Collection implements Contracts\DtoCollection, Countable
         return $this->items;
     }
 
-    /**
-     * @return int
-     */
     public function count(): int
     {
         return count($this->items);

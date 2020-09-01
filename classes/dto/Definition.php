@@ -8,11 +8,6 @@ use Carbon\Carbon;
 use Vdlp\Sitemap\Classes\Contracts\Dto;
 use Vdlp\Sitemap\Classes\Exceptions\InvalidPriority;
 
-/**
- * Class Definition
- *
- * @package Vdlp\Sitemap\Classes\Dto
- */
 final class Definition implements Dto
 {
     public const CHANGE_FREQUENCY_ALWAYS = 'always';
@@ -44,7 +39,6 @@ final class Definition implements Dto
     private $modifiedAt;
 
     /**
-     * {@inheritDoc}
      * @throws InvalidPriority
      */
     public static function fromArray(array $data): Dto
@@ -55,27 +49,18 @@ final class Definition implements Dto
             ->setModifiedAt($data['modified_at'] ?? null);
     }
 
-    /**
-     * @param string|null $url
-     * @return Definition
-     */
     public function setUrl(?string $url): Definition
     {
         $this->url = $url;
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getUrl(): ?string
     {
         return $this->url;
     }
 
     /**
-     * @param int|null $priority
-     * @return Definition
      * @throws InvalidPriority
      */
     public function setPriority(?int $priority): Definition
@@ -89,17 +74,11 @@ final class Definition implements Dto
         return $this;
     }
 
-    /**
-     * @return int|null
-     */
     public function getPriority(): ?int
     {
         return $this->priority;
     }
 
-    /**
-     * @return float|null
-     */
     public function getPriorityFloat(): ?float
     {
         if ($this->priority === null) {
@@ -109,37 +88,23 @@ final class Definition implements Dto
         return (float)$this->priority / 10;
     }
 
-    /**
-     * @param string|null $changeFrequency
-     * @return Definition
-     */
     public function setChangeFrequency(?string $changeFrequency): Definition
     {
         $this->changeFrequency = $changeFrequency;
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getChangeFrequency(): ?string
     {
         return $this->changeFrequency;
     }
 
-    /**
-     * @param Carbon|null $modifiedAt
-     * @return Definition
-     */
     public function setModifiedAt(?Carbon $modifiedAt): Definition
     {
         $this->modifiedAt = $modifiedAt;
         return $this;
     }
 
-    /**
-     * @return Carbon|null
-     */
     public function getModifiedAt(): ?Carbon
     {
         return $this->modifiedAt;

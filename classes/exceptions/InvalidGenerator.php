@@ -7,11 +7,6 @@ namespace Vdlp\Sitemap\Classes\Exceptions;
 use InvalidArgumentException;
 use Throwable;
 
-/**
- * Class InvalidGenerator
- *
- * @package Vdlp\Sitemap\Classes\Exceptions
- */
 final class InvalidGenerator extends InvalidArgumentException
 {
     /**
