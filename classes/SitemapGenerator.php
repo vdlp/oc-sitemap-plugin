@@ -7,44 +7,32 @@ namespace Vdlp\Sitemap\Classes;
 use Closure;
 use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Contracts\Events\Dispatcher;
+use Psr\SimpleCache\InvalidArgumentException;
 use RuntimeException;
-use Vdlp\Sitemap\Classes\Contracts;
-use Vdlp\Sitemap\Classes\Dto;
+use Vdlp\Sitemap\Classes\Contracts\DefinitionGenerator;
+use Vdlp\Sitemap\Classes\Contracts\SitemapGenerator as SitemapGeneratorInterface;
+use Vdlp\Sitemap\Classes\Dto\Definition;
+use Vdlp\Sitemap\Classes\Dto\Definitions;
 use Vdlp\Sitemap\Classes\Exceptions\DtoNotFound;
 use Vdlp\Sitemap\Classes\Exceptions\InvalidGenerator;
 
-final class SitemapGenerator implements Contracts\SitemapGenerator
+final class SitemapGenerator implements SitemapGeneratorInterface
 {
     private const CACHE_KEY_SITEMAP = 'vdlp_sitemap_cache';
     private const CACHE_DEFINITIONS = 'vdlp_sitemap_definitions';
     private const VDLP_SITEMAP_PATH = 'vdlp/sitemap/sitemap.xml';
 
-    /**
-     * @var Repository
-     */
-    private $cache;
-
-    /**
-     * @var Dispatcher
-     */
-    private $event;
-
-    /**
-     * @var integer
-     */
-    private $cacheTime;
-
-    /**
-     * @var bool
-     */
-    private $cacheForever;
+    private Repository $cache;
+    private Dispatcher $event;
+    private int $cacheTime;
+    private bool $cacheForever;
 
     public function __construct(Repository $cache, Dispatcher $event)
     {
         $this->cache = $cache;
         $this->event = $event;
-        $this->cacheTime = config('vdlp.sitemap::sitemap_cache_time', 60);
-        $this->cacheForever = config('vdlp.sitemap::sitemap_cache_forever', false);
+        $this->cacheTime = (int) config('sitemap.cache_time', 3600);
+        $this->cacheForever = (bool) config('sitemap.cache_forever', false);
     }
 
     public function invalidateCache(): bool
@@ -57,14 +45,27 @@ final class SitemapGenerator implements Contracts\SitemapGenerator
      */
     public function generate(): void
     {
-        $fromCache = $this->cache->has(self::CACHE_KEY_SITEMAP);
+        try {
+            $fromCache = $this->cache->has(self::CACHE_KEY_SITEMAP);
+        } catch (InvalidArgumentException $e) {
+            $fromCache = false;
+        }
 
         $path = storage_path(self::VDLP_SITEMAP_PATH);
 
-        if (!$fromCache || !file_exists($path)) {
-            $this->createXmlFile($this->rememberDefinitionsFromCache(), $path);
-            $this->updateCache(self::CACHE_KEY_SITEMAP, true);
+        $fileExists = file_exists($path);
+
+        if ($fromCache && !$fileExists) {
+            $this->invalidateCache();
+            $fromCache = false;
         }
+
+        if ($fromCache || file_exists($path)) {
+            return;
+        }
+
+        $this->createXmlFile($this->rememberDefinitionsFromCache(), $path);
+        $this->updateCache(self::CACHE_KEY_SITEMAP, true);
     }
 
     public function output(): void
@@ -73,14 +74,17 @@ final class SitemapGenerator implements Contracts\SitemapGenerator
 
         $handle = fopen(storage_path(self::VDLP_SITEMAP_PATH), 'rb');
 
-        fpassthru($handle);
+        if ($handle === false) {
+            exit(1);
+        }
 
+        fpassthru($handle);
         fclose($handle);
 
-        exit;
+        exit(0);
     }
 
-    public function updateDefinition(Dto\Definition $definition, ?string $oldUrl = null): void
+    public function updateDefinition(Definition $definition, ?string $oldUrl = null): void
     {
         $definitions = $this->rememberDefinitionsFromCache();
 
@@ -97,6 +101,7 @@ final class SitemapGenerator implements Contracts\SitemapGenerator
                     ->setModifiedAt($definition->getModifiedAt());
 
                 $found = true;
+
                 break;
             }
         }
@@ -109,7 +114,7 @@ final class SitemapGenerator implements Contracts\SitemapGenerator
         $this->invalidateSitemapCache();
     }
 
-    public function addDefinition(Dto\Definition $definition): void
+    public function addDefinition(Definition $definition): void
     {
         if (!$this->allowAdd($this->getExcludeUrls(), $definition)) {
             return;
@@ -121,7 +126,7 @@ final class SitemapGenerator implements Contracts\SitemapGenerator
         $this->invalidateSitemapCache();
     }
 
-    public function updateOrAddDefinition(Dto\Definition $definition, ?string $oldUrl = null): void
+    public function updateOrAddDefinition(Definition $definition, ?string $oldUrl = null): void
     {
         try {
             $this->updateDefinition($definition, $oldUrl);
@@ -141,43 +146,71 @@ final class SitemapGenerator implements Contracts\SitemapGenerator
     /**
      * @throws RuntimeException
      */
-    private function createXmlFile(Dto\Definitions $definitions, string $path): void
+    private function createXmlFile(Definitions $definitions, string $path): void
     {
-        if (!file_exists(dirname($path))
-            && !mkdir($concurrentDirectory = dirname($path), 0777, true)
-            && !is_dir($concurrentDirectory)
-        ) {
+        $concurrentDirectory = dirname($path);
+
+        if (!file_exists($concurrentDirectory)) {
+            $directoryCreated = mkdir($concurrentDirectory, 0777, true);
+
+            if (!$directoryCreated) {
+                throw new RuntimeException(sprintf(
+                    'Vdlp.Sitemap: Directory "%s" could not be created.',
+                    $concurrentDirectory
+                ));
+            }
+        }
+
+        if (!is_dir($concurrentDirectory) || !is_readable($concurrentDirectory)) {
             throw new RuntimeException(sprintf(
-                'Vdlp.Sitemap: Directory "%s" was not created.',
+                'Vdlp.Sitemap: Unable to read directory "%s".',
                 $concurrentDirectory
             ));
         }
 
-        @unlink($path);
-        @touch($path);
+        if (file_exists($path) && !unlink($path)) {
+            throw new RuntimeException(sprintf(
+                'Vdlp.Sitemap: Unable to delete file "%s".',
+                $path
+            ));
+        }
+
+        if (!file_exists($path) && !touch($path)) {
+            throw new RuntimeException(sprintf(
+                'Vdlp.Sitemap: Unable to touch file "%s".',
+                $path
+            ));
+        }
 
         $file = fopen($path, 'a+b');
 
-        fwrite($file, '<?xml version="1.0" encoding="UTF-8"?>');
+        if ($file === false) {
+            throw new RuntimeException(sprintf(
+                'Vdlp.Sitemap: Unable to open file "%s".',
+                $path
+            ));
+        }
+
+        fwrite($file, '<?xml version="1.0" encoding="UTF-8" ?>');
         fwrite($file, '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">');
 
         /** @var Dto\Definition $definition */
         foreach ($definitions->getItems() as $definition) {
             $xml = '<url>';
 
-            if ($definition->getUrl()) {
-                $xml .= '<loc>' . $definition->getUrl() .'</loc>';
+            if ($definition->getUrl() !== null) {
+                $xml .= '<loc>' . $definition->getUrl() . '</loc>';
             }
 
-            if ($definition->getModifiedAt()) {
+            if ($definition->getModifiedAt() !== null) {
                 $xml .= '<lastmod>' . $definition->getModifiedAt()->toAtomString() . '</lastmod>';
             }
 
-            if ($definition->getPriorityFloat()) {
+            if ($definition->getPriorityFloat() !== null) {
                 $xml .= '<priority>' . $definition->getPriorityFloat() . '</priority>';
             }
 
-            if ($definition->getChangeFrequency()) {
+            if ($definition->getChangeFrequency() !== null) {
                 $xml .= '<changefreq>' . $definition->getChangeFrequency() . '</changefreq>';
             }
 
@@ -193,9 +226,9 @@ final class SitemapGenerator implements Contracts\SitemapGenerator
     /**
      * @throws InvalidGenerator|Exceptions\DtoNotAccepted
      */
-    private function getDefinitions(): Dto\Definitions
+    private function getDefinitions(): Definitions
     {
-        $definitions = new Dto\Definitions();
+        $definitions = new Definitions();
 
         $result = $this->event->dispatch(self::GENERATE_EVENT);
 
@@ -208,12 +241,13 @@ final class SitemapGenerator implements Contracts\SitemapGenerator
         $definitionGenerators = $this->flattenArray($result);
 
         foreach ($definitionGenerators as $definitionGenerator) {
-            if (!($definitionGenerator instanceof Contracts\DefinitionGenerator)) {
+            if (!($definitionGenerator instanceof DefinitionGenerator)) {
                 throw new InvalidGenerator();
             }
 
             $tempDefinitions = $definitionGenerator->getDefinitions();
 
+            /** @var Definition $definition */
             foreach ($tempDefinitions->getItems() as $definition) {
                 if ($this->allowAdd($excludeUrls, $definition)) {
                     $definitions->addItem($definition);
@@ -224,14 +258,14 @@ final class SitemapGenerator implements Contracts\SitemapGenerator
         return $definitions;
     }
 
-    private function allowAdd(array $excludeUrls, Dto\Definition $definition): bool
+    private function allowAdd(array $excludeUrls, Definition $definition): bool
     {
         return !in_array($definition->getUrl(), $excludeUrls, true);
     }
 
     private function getExcludeUrls(): array
     {
-        return $this->flattenArray($this->event->dispatch(self::EXCLUDE_URLS_EVENT));
+        return $this->flattenArray((array) $this->event->dispatch(self::EXCLUDE_URLS_EVENT));
     }
 
     private function flattenArray(array $array): array
@@ -250,6 +284,9 @@ final class SitemapGenerator implements Contracts\SitemapGenerator
         return $flatArray;
     }
 
+    /**
+     * @param mixed $value
+     */
     private function updateCache(string $key, $value): void
     {
         if ($this->cacheForever) {
@@ -259,13 +296,19 @@ final class SitemapGenerator implements Contracts\SitemapGenerator
         $this->cache->put($key, $value, $this->cacheTime);
     }
 
-    private function rememberDefinitionsFromCache(): Dto\Definitions
+    private function rememberDefinitionsFromCache(): Definitions
     {
-        return $this->rememberFromCache(self::CACHE_DEFINITIONS, function () {
+        /** @var Definitions $definitions */
+        $definitions = $this->rememberFromCache(self::CACHE_DEFINITIONS, function (): Definitions {
             return $this->getDefinitions();
         });
+
+        return $definitions;
     }
 
+    /**
+     * @return mixed
+     */
     private function rememberFromCache(string $key, Closure $closure)
     {
         if ($this->cacheForever) {

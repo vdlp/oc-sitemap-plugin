@@ -1,17 +1,14 @@
 <?php
 
-/** @noinspection PhpMissingParentCallCommonInspection */
-
 declare(strict_types=1);
 
 namespace Vdlp\Sitemap;
 
 use Illuminate\Contracts\Events\Dispatcher;
 use System\Classes\PluginBase;
-use Vdlp\Sitemap\Classes\EventSubscribers;
-use Vdlp\Sitemap\ServiceProviders;
+use Vdlp\Sitemap\Classes\EventSubscribers\SitemapSubscriber;
 
-class Plugin extends PluginBase
+final class Plugin extends PluginBase
 {
     public function pluginDetails(): array
     {
@@ -25,10 +22,10 @@ class Plugin extends PluginBase
 
     public function register(): void
     {
-        $this->app->register(ServiceProviders\SitemapServiceProvider::class);
+        $this->app->register(ServiceProvider::class);
 
         /** @var Dispatcher $events */
         $events = $this->app->make(Dispatcher::class);
-        $events->subscribe($this->app->make(EventSubscribers\SitemapSubscriber::class));
+        $events->subscribe($this->app->make(SitemapSubscriber::class));
     }
 }

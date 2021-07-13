@@ -1,6 +1,6 @@
 {
     "name": "vdlp/oc-sitemap-plugin",
-    "description": "A sitemap.xml generator for October CMS",
+    "description": "A sitemap.xml generator for October CMS.",
     "type": "october-plugin",
     "license": "GPL-2.0-only",
     "authors": [
@@ -11,12 +11,13 @@
     ],
     "minimum-stability": "stable",
     "require": {
-        "php": "^7.1||^8.0",
+        "php": "^7.4 || ^8.0",
         "composer/installers": "^1.0"
     },
     "archive": {
         "exclude": [
             ".gitignore",
+            ".github",
             ".idea/"
         ]
     }
