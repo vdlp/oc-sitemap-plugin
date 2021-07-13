@@ -13,7 +13,7 @@ abstract class Collection implements Contracts\DtoCollection, Countable
     /**
      * @var Contracts\Dto[]
      */
-    protected $items;
+    protected array $items;
 
     /**
      * @param Contracts\Dto[] $items
@@ -56,6 +56,6 @@ abstract class Collection implements Contracts\DtoCollection, Countable
      */
     public function last()
     {
-        return $this->items[count($this) - 1] ?? null;
+        return $this->items[(int) (count($this) - 1)] ?? null;
     }
 }

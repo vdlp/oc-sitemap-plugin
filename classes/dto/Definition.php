@@ -18,32 +18,17 @@ final class Definition implements Dto
     public const CHANGE_FREQUENCY_YEARLY = 'yearly';
     public const CHANGE_FREQUENCY_NEVER = 'never';
 
-    /**
-     * @var string|null
-     */
-    private $url;
-
-    /**
-     * @var int|null
-     */
-    private $priority;
-
-    /**
-     * @var string|null
-     */
-    private $changeFrequency;
-
-    /**
-     * @var Carbon|null
-     */
-    private $modifiedAt;
+    private ?string $url = null;
+    private ?int $priority = null;
+    private ?string $changeFrequency = null;
+    private ?Carbon $modifiedAt = null;
 
     /**
      * @throws InvalidPriority
      */
     public static function fromArray(array $data): Dto
     {
-        return (new self)->setUrl($data['url'] ?? null)
+        return (new self())->setUrl($data['url'] ?? null)
             ->setPriority($data['priority'] ?? null)
             ->setChangeFrequency($data['change_frequency'] ?? null)
             ->setModifiedAt($data['modified_at'] ?? null);
@@ -52,6 +37,7 @@ final class Definition implements Dto
     public function setUrl(?string $url): Definition
     {
         $this->url = $url;
+
         return $this;
     }
 
@@ -67,11 +53,11 @@ final class Definition implements Dto
     {
         if ($priority >= 1 && $priority <= 10) {
             $this->priority = $priority;
-        } else {
-            throw new InvalidPriority();
+
+            return $this;
         }
 
-        return $this;
+        throw new InvalidPriority();
     }
 
     public function getPriority(): ?int
@@ -85,12 +71,13 @@ final class Definition implements Dto
             return null;
         }
 
-        return (float)$this->priority / 10;
+        return (float) $this->priority / 10;
     }
 
     public function setChangeFrequency(?string $changeFrequency): Definition
     {
         $this->changeFrequency = $changeFrequency;
+
         return $this;
     }
 
@@ -102,6 +89,7 @@ final class Definition implements Dto
     public function setModifiedAt(?Carbon $modifiedAt): Definition
     {
         $this->modifiedAt = $modifiedAt;
+
         return $this;
     }
 

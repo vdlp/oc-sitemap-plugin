@@ -9,10 +9,7 @@ use Vdlp\Sitemap\Classes\Contracts\Dto;
 
 final class DtoNotAccepted extends InvalidArgumentException
 {
-    /**
-     * @return DtoNotAccepted
-     */
-    public static function withDto(Dto $dto): DtoNotAccepted
+    public static function withDto(Dto $dto): self
     {
         return new self('DTO of type ' . get_class($dto) . ' not accepted.');
     }

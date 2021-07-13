@@ -25,7 +25,7 @@ final class Definitions extends Collection
      */
     public static function fromArray(array $items): Definitions
     {
-        return new static(array_map(static function (array $item) {
+        return new self(array_map(static function (array $item): Dto {
             return Definition::fromArray($item);
         }, $items));
     }
@@ -39,6 +39,7 @@ final class Definitions extends Collection
         foreach ($this->items as $key => $item) {
             if ($item->getUrl() === $url) {
                 unset($this->items[$key]);
+
                 return;
             }
         }

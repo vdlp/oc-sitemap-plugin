@@ -18,7 +18,7 @@
 
 ## Requirements
 
-- PHP 7.1 or higher
+- PHP 7.4 or higher
 - This plugin requires the `Vdlp.Sitemap` plugin. 
 - October CMS (preferably the latest version).
 
@@ -36,6 +36,7 @@ final class DefinitionGenerator implements Contracts\DefinitionGenerator
     public function getDefinitions(): Definitions
     {
         $definitions = new Definitions();
+
         for ($i = 0; $i < 100; $i++) {
             $definitions->addItem(
                 (new Definition)->setModifiedAt(Carbon::now())
@@ -53,7 +54,7 @@ final class DefinitionGenerator implements Contracts\DefinitionGenerator
 Register your generator in the `boot` method of your plugin class:
 
 ```
-Event::listen(Contracts\SitemapGenerator::GENERATE_EVENT, static function() {
+Event::listen(Contracts\SitemapGenerator::GENERATE_EVENT, static function(): DefinitionGenerator {
     return new DefinitionGenerator();
 });
 ```
@@ -61,7 +62,7 @@ Event::listen(Contracts\SitemapGenerator::GENERATE_EVENT, static function() {
 You can also register multiple generators:
 
 ```
-Event::listen(Contracts\SitemapGenerator::GENERATE_EVENT, static function() {
+Event::listen(Contracts\SitemapGenerator::GENERATE_EVENT, static function(): array {
     return [
         new DefinitionGeneratorOne(), 
         new DefinitionGeneratorTwo(),
@@ -144,20 +145,26 @@ $sitemapGenerator->deleteDefinition('example.com/new-url');
 ## Exclude URLs from sitemap
 
 ```
-Event::listen(SitemapGenerator::EXCLUDE_URLS_EVENT, static function () {
+Event::listen(SitemapGenerator::EXCLUDE_URLS_EVENT, static function (): array {
     return [
         'example.com/page/1',
     ];
 });
 ```
 
-## Settings
+## Configuration
 
-You can change the amount of minutes the sitemap is cached in your `.env` file.
+Add the plugin configuration to your config folder:
+
+```
+php artisan vendor:publish --provider="Vdlp\Sitemap\ServiceProvider" --tag="config"
+```
+
+You can change the amount of seconds the sitemap is cached in your `.env` file.
 You can also cache the sitemap forever.
 
  ```
-VDLP_SITEMAP_CACHE_TIME = 60
+VDLP_SITEMAP_CACHE_TIME = 3600
 VDLP_SITEMAP_CACHE_FOREVER = false
 ```
 

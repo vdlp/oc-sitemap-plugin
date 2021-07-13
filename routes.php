@@ -9,7 +9,7 @@ use Vdlp\Sitemap\Classes\Contracts\SitemapGenerator;
 /** @var Routing\Router $router */
 $router = resolve(Routing\Router::class);
 
-$router->get('sitemap.xml', static function () {
+$router->get('sitemap.xml', static function (): void {
     try {
         /** @var SitemapGenerator $generator */
         $generator = resolve(SitemapGenerator::class);
@@ -18,6 +18,6 @@ $router->get('sitemap.xml', static function () {
     } catch (Throwable $e) {
         /** @var LoggerInterface $log */
         $log = resolve(LoggerInterface::class);
-        $log->error($e);
+        $log->error('Vdlp.Sitemap: Unable to serve sitemap.xml: ' . $e->getMessage());
     }
 });

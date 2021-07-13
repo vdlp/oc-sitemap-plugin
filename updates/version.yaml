@@ -3,3 +3,4 @@
 1.0.2: Fix formatting of ModifiedAt DateTime
 1.0.3: Code cleanup
 1.1.0: Update plugin dependencies
+2.0.0: "!!! Add support for PHP 7.4 or higher. Please review plugin configuration, check README.md"
