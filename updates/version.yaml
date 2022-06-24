@@ -1,6 +1,7 @@
-1.0.0: First version of Vdlp.Sitemap
-1.0.1: Add LICENSE file to plugin
-1.0.2: Fix formatting of ModifiedAt DateTime
-1.0.3: Code cleanup
-1.1.0: Update plugin dependencies
-2.0.0: "!!! Add support for PHP 7.4 or higher. Please review plugin configuration, check README.md"
+v1.0.0: First version of Vdlp.Sitemap
+v1.0.1: Add LICENSE file to plugin
+v1.0.2: Fix formatting of ModifiedAt DateTime
+v1.0.3: Code cleanup
+v1.1.0: Update plugin dependencies
+v2.0.0: "Add support for PHP 7.4 or higher. Please review plugin configuration, check README.md"
+v2.1.0: "Maintenance update. Check CHANGELOG.md for details."

@@ -1,24 +1,34 @@
 {
     "name": "vdlp/oc-sitemap-plugin",
     "description": "A sitemap.xml generator for October CMS.",
-    "type": "october-plugin",
     "license": "GPL-2.0-only",
+    "type": "october-plugin",
     "authors": [
         {
             "name": "Van der Let & Partners",
             "email": "octobercms@vdlp.nl"
         }
     ],
-    "minimum-stability": "stable",
     "require": {
-        "php": "^7.4 || ^8.0",
-        "composer/installers": "^1.0"
+        "php": "^8.0.2",
+        "composer/installers": "^1.0 || ^2.0",
+        "october/system": "^2.2"
     },
+    "suggest": {
+        "vdlp/oc-sitemapgenerators-plugin": "Adds pre-built sitemap generators for your October CMS website."
+    },
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://gateway.octobercms.com"
+        }
+    ],
+    "minimum-stability": "stable",
     "archive": {
         "exclude": [
-            ".gitignore",
+            ".gitattributes",
             ".github",
-            ".idea/"
+            ".gitignore"
         ]
     }
 }

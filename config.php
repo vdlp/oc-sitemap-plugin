@@ -11,10 +11,6 @@ return [
     |
     | Configure how long the sitemap.xml data will be cached.
     |
-    | CAUTION:
-    | - Time in minutes (Laravel 5.7 or lower).
-    | - Time in seconds (Laravel 5.8 or higher).
-    |
     | Default = 1 hour (3600 seconds)
     |
     */

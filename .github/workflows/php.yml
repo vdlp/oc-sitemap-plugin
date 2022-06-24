@@ -14,7 +14,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        php: [ 8.0, 7.4 ]
+        php: [ 8.0 ]
         stability: [ prefer-lowest, prefer-stable ]
 
     name: PHP ${{ matrix.php }} - ${{ matrix.stability }}
@@ -27,6 +27,9 @@ jobs:
       with:
         php-version: ${{ matrix.php }}
         coverage: none
+
+    - name: Add HTTP basic auth credentials
+      run: echo '${{ secrets.VDLP_OCTOBER_CMS_AUTH_JSON }}' > $GITHUB_WORKSPACE/auth.json
 
     - name: Validate composer.json and composer.lock
       run: composer validate
