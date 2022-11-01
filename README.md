@@ -29,7 +29,7 @@ To generate sitemap items you can create your own sitemap definition generator.
 
 Example:
 
-```
+```php
 final class DefinitionGenerator implements Contracts\DefinitionGenerator
 {
     public function getDefinitions(): Definitions
@@ -52,7 +52,7 @@ final class DefinitionGenerator implements Contracts\DefinitionGenerator
 
 Register your generator in the `boot` method of your plugin class:
 
-```
+```php
 Event::listen(Contracts\SitemapGenerator::GENERATE_EVENT, static function(): DefinitionGenerator {
     return new DefinitionGenerator();
 });
@@ -60,10 +60,10 @@ Event::listen(Contracts\SitemapGenerator::GENERATE_EVENT, static function(): Def
 
 You can also register multiple generators:
 
-```
+```php
 Event::listen(Contracts\SitemapGenerator::GENERATE_EVENT, static function(): array {
     return [
-        new DefinitionGeneratorOne(), 
+        new DefinitionGeneratorOne(),
         new DefinitionGeneratorTwo(),
         // ..
     ];
@@ -74,13 +74,13 @@ Event::listen(Contracts\SitemapGenerator::GENERATE_EVENT, static function(): arr
 
 You can fire an event to invalidate the sitemap cache
 
-```
+```php
 Event::fire(Contracts\SitemapGenerator::INVALIDATE_CACHE_EVENT);
 ```
 
 Or resolve the generator instance and use the invalidate cache method
 
-```
+```php
 /** @var SitemapGenerator $sitemapGenerator */
 $sitemapGenerator = resolve(Contracts\SitemapGenerator::class);
 $sitemapGenerator->invalidateCache();
@@ -90,14 +90,14 @@ $sitemapGenerator->invalidateCache();
 
 First resolve the sitemap generator
 
-```
+```php
 /** @var SitemapGenerator $sitemapGenerator */
 $sitemapGenerator = resolve(Contracts\SitemapGenerator::class);
 ```
 
 ### Add definitions
 
-```
+```php
 $sitemapGenerator->addDefinition(
     (new Definition())
         ->setUrl('example.com/new-url')
@@ -111,7 +111,7 @@ $sitemapGenerator->addDefinition(
 
 > Note, definitions are updated by their URL.
 
-```
+```php
 $sitemapGenerator->updateDefinition(
     (new Definition())
         ->setUrl('example.com/page/1')
@@ -124,7 +124,7 @@ $sitemapGenerator->updateDefinition(
 
 ### Update or add definitions
 
-```
+```php
 $sitemapGenerator->updateOrAddDefinition(
     (new Definition())
         ->setUrl('example.com/create-or-add')
@@ -137,13 +137,13 @@ $sitemapGenerator->updateOrAddDefinition(
 
 ### Delete definitions
 
-```
+```php
 $sitemapGenerator->deleteDefinition('example.com/new-url');
 ```
 
 ## Exclude URLs from sitemap
 
-```
+```php
 Event::listen(SitemapGenerator::EXCLUDE_URLS_EVENT, static function (): array {
     return [
         'example.com/page/1',
@@ -162,9 +162,41 @@ php artisan vendor:publish --provider="Vdlp\Sitemap\ServiceProvider" --tag="conf
 You can change the amount of seconds the sitemap is cached in your `.env` file.
 You can also cache the sitemap forever.
 
- ```
+ ```dotenv
 VDLP_SITEMAP_CACHE_TIME = 3600
 VDLP_SITEMAP_CACHE_FOREVER = false
+```
+
+### ConfigResolver
+
+Optionally you can override how the sitemap config should be resolved by giving your own ConfigResolver implementation in the config file.
+This can be useful for multisite projects, where the sitemap should be cached per domain.
+
+```php
+use Illuminate\Contracts\Config\Repository;
+use Illuminate\Http\Request;
+use Vdlp\Sitemap\Classes\Contracts\ConfigResolver;
+use Vdlp\Sitemap\Classes\Dto\SitemapConfig;
+
+final class MultisiteConfigResolver implements ConfigResolver
+{
+    public function __construct(private Repository $config, private Request $request)
+    {
+    }
+
+    public function getConfig(): SitemapConfig
+    {
+        $domain = $this->request->getHost();
+
+        return new SitemapConfig(
+            'vdlp_sitemap_cache_' . $domain,
+            'vdlp_sitemap_definitions_' . $domain,
+            sprintf('vdlp/sitemap/sitemap_%s.xml', $domain),
+            (int) $this->config->get('sitemap.cache_time', 3600),
+            (bool) $this->config->get('sitemap.cache_forever', false)
+        );
+    }
+}
 ```
 
 ## Issues

@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Vdlp\Sitemap\Classes\Resolvers\StaticConfigResolver;
+
 return [
 
     /*
@@ -27,5 +29,15 @@ return [
     */
 
     'cache_forever' => env('VDLP_SITEMAP_CACHE_FOREVER', false),
+
+    /*
+     |--------------------------------------------------------------------------
+     | Config resolver
+     |--------------------------------------------------------------------------
+     |
+     | Configure how the sitemap config should be resolved.
+     |
+     */
+    'config_resolver' => StaticConfigResolver::class,
 
 ];
