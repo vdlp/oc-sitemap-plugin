@@ -197,7 +197,7 @@ final class SitemapGenerator implements SitemapGeneratorInterface
             $xml = '<url>';
 
             if ($definition->getUrl() !== null) {
-                $xml .= '<loc>' . $definition->getUrl() . '</loc>';
+                $xml .= '<loc>' . htmlspecialchars($definition->getUrl(), ENT_XML1, 'UTF-8') . '</loc>';
             }
 
             if ($definition->getModifiedAt() !== null) {
@@ -214,10 +214,14 @@ final class SitemapGenerator implements SitemapGeneratorInterface
 
             foreach ($definition->getImages() as $image) {
                 $xml .= '<image:image>';
-                $xml .= '<image:loc>' . $image->getUrl() . '</image:loc>';
+                $xml .= '<image:loc>'
+                    . htmlspecialchars($image->getUrl(), ENT_XML1, 'UTF-8')
+                    . '</image:loc>';
 
                 if ($image->getTitle() !== null) {
-                    $xml .= '<image:title>' . $image->getTitle() . '</image:title>';
+                    $xml .= '<image:title>'
+                        . htmlspecialchars($image->getTitle(), ENT_XML1, 'UTF-8')
+                        . '</image:title>';
                 }
 
                 $xml .= '</image:image>';
