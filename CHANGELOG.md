@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Add support for oc 1.
 * Fixed bug where sitemap would never regenerate when sitemap file exists.
 * Escape illegal xml characters in loc and title elements.
+* Log exception with stack trace and show 500 error when an error occurs.
 
 ## [2.0.0] - 2021-07-13
 
