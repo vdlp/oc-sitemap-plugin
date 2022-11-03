@@ -205,7 +205,7 @@ final class SitemapGenerator implements SitemapGeneratorInterface
             }
 
             if ($definition->getPriorityFloat() !== null) {
-                $xml .= '<priority>' . $definition->getPriorityFloat() . '</priority>';
+                $xml .= '<priority>' . number_format($definition->getPriorityFloat(), 1) . '</priority>';
             }
 
             if ($definition->getChangeFrequency() !== null) {

@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Add support for images.
 * Add sitemap config resolver to configure the sitemap config on runtime. This can be useful for multisite projects.
 * Add support for oc 1.
+* Add support for priority zero.
 * Fixed bug where sitemap would never regenerate when sitemap file exists.
 * Escape illegal xml characters in loc and title elements.
 * Log exception with stack trace and show 500 error when an error occurs.

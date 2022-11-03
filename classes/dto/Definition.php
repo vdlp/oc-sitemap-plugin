@@ -56,7 +56,7 @@ final class Definition implements Dto
      */
     public function setPriority(?int $priority): Definition
     {
-        if ($priority >= 1 && $priority <= 10) {
+        if ($priority >= 0 && $priority <= 10) {
             $this->priority = $priority;
 
             return $this;
