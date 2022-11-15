@@ -18,8 +18,8 @@
 
 ## Requirements
 
-- PHP 8.0.2 or higher
-- October CMS 2.x or 3.x
+- PHP 8.0 or higher
+- October CMS 1.1 or higher
 
 ## Usage
 
