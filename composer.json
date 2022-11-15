@@ -10,9 +10,9 @@
         }
     ],
     "require": {
-        "php": "^8.0.2",
+        "php": "^8.0",
         "composer/installers": "^1.0 || ^2.0",
-        "october/system": "^2.2"
+        "october/system": ">=1.1"
     },
     "suggest": {
         "vdlp/oc-sitemapgenerators-plugin": "Adds pre-built sitemap generators for your October CMS website."
@@ -30,5 +30,10 @@
             ".github",
             ".gitignore"
         ]
+    },
+    "config": {
+        "allow-plugins": {
+            "composer/installers": true
+        }
     }
 }

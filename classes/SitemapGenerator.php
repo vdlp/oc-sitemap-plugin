@@ -9,30 +9,28 @@ use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Contracts\Events\Dispatcher;
 use Psr\SimpleCache\InvalidArgumentException;
 use RuntimeException;
+use Vdlp\Sitemap\Classes\Contracts\ConfigResolver;
 use Vdlp\Sitemap\Classes\Contracts\DefinitionGenerator;
 use Vdlp\Sitemap\Classes\Contracts\SitemapGenerator as SitemapGeneratorInterface;
 use Vdlp\Sitemap\Classes\Dto\Definition;
 use Vdlp\Sitemap\Classes\Dto\Definitions;
+use Vdlp\Sitemap\Classes\Dto\SitemapConfig;
 use Vdlp\Sitemap\Classes\Exceptions\DtoNotFound;
 use Vdlp\Sitemap\Classes\Exceptions\InvalidGenerator;
 
 final class SitemapGenerator implements SitemapGeneratorInterface
 {
-    private const CACHE_KEY_SITEMAP = 'vdlp_sitemap_cache';
-    private const CACHE_DEFINITIONS = 'vdlp_sitemap_definitions';
-    private const VDLP_SITEMAP_PATH = 'vdlp/sitemap/sitemap.xml';
-
     private Repository $cache;
-    private Dispatcher $event;
-    private int $cacheTime;
-    private bool $cacheForever;
 
-    public function __construct(Repository $cache, Dispatcher $event)
+    private Dispatcher $event;
+
+    private SitemapConfig $sitemapConfig;
+
+    public function __construct(Repository $cache, Dispatcher $event, ConfigResolver $configResolver)
     {
         $this->cache = $cache;
         $this->event = $event;
-        $this->cacheTime = (int) config('sitemap.cache_time', 3600);
-        $this->cacheForever = (bool) config('sitemap.cache_forever', false);
+        $this->sitemapConfig = $configResolver->getConfig();
     }
 
     public function invalidateCache(): bool
@@ -46,12 +44,12 @@ final class SitemapGenerator implements SitemapGeneratorInterface
     public function generate(): void
     {
         try {
-            $fromCache = $this->cache->has(self::CACHE_KEY_SITEMAP);
+            $fromCache = $this->cache->has($this->sitemapConfig->getCacheKeySitemap());
         } catch (InvalidArgumentException $e) {
             $fromCache = false;
         }
 
-        $path = storage_path(self::VDLP_SITEMAP_PATH);
+        $path = storage_path($this->sitemapConfig->getCacheFilePath());
 
         $fileExists = file_exists($path);
 
@@ -60,19 +58,19 @@ final class SitemapGenerator implements SitemapGeneratorInterface
             $fromCache = false;
         }
 
-        if ($fromCache || file_exists($path)) {
+        if ($fromCache && file_exists($path)) {
             return;
         }
 
         $this->createXmlFile($this->rememberDefinitionsFromCache(), $path);
-        $this->updateCache(self::CACHE_KEY_SITEMAP, true);
+        $this->updateCache($this->sitemapConfig->getCacheKeySitemap(), true);
     }
 
     public function output(): void
     {
         header('Content-Type: application/xml');
 
-        $handle = fopen(storage_path(self::VDLP_SITEMAP_PATH), 'rb');
+        $handle = fopen(storage_path($this->sitemapConfig->getCacheFilePath()), 'rb');
 
         if ($handle === false) {
             exit(1);
@@ -110,7 +108,7 @@ final class SitemapGenerator implements SitemapGeneratorInterface
             throw new DtoNotFound();
         }
 
-        $this->updateCache(self::CACHE_DEFINITIONS, $definitions);
+        $this->updateCache($this->sitemapConfig->getCacheKeyDefinitions(), $definitions);
         $this->invalidateSitemapCache();
     }
 
@@ -122,7 +120,7 @@ final class SitemapGenerator implements SitemapGeneratorInterface
 
         $definitions = $this->rememberDefinitionsFromCache();
         $definitions->addItem($definition);
-        $this->updateCache(self::CACHE_DEFINITIONS, $definitions);
+        $this->updateCache($this->sitemapConfig->getCacheKeyDefinitions(), $definitions);
         $this->invalidateSitemapCache();
     }
 
@@ -139,7 +137,7 @@ final class SitemapGenerator implements SitemapGeneratorInterface
     {
         $definitions = $this->rememberDefinitionsFromCache();
         $definitions->removeDefinitionByUrl($url);
-        $this->updateCache(self::CACHE_DEFINITIONS, $definitions);
+        $this->updateCache($this->sitemapConfig->getCacheKeyDefinitions(), $definitions);
         $this->invalidateSitemapCache();
     }
 
@@ -192,14 +190,14 @@ final class SitemapGenerator implements SitemapGeneratorInterface
         }
 
         fwrite($file, '<?xml version="1.0" encoding="UTF-8" ?>');
-        fwrite($file, '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">');
+        fwrite($file, '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">');
 
         /** @var Dto\Definition $definition */
         foreach ($definitions->getItems() as $definition) {
             $xml = '<url>';
 
             if ($definition->getUrl() !== null) {
-                $xml .= '<loc>' . $definition->getUrl() . '</loc>';
+                $xml .= '<loc>' . htmlspecialchars($definition->getUrl(), ENT_XML1, 'UTF-8') . '</loc>';
             }
 
             if ($definition->getModifiedAt() !== null) {
@@ -207,11 +205,26 @@ final class SitemapGenerator implements SitemapGeneratorInterface
             }
 
             if ($definition->getPriorityFloat() !== null) {
-                $xml .= '<priority>' . $definition->getPriorityFloat() . '</priority>';
+                $xml .= '<priority>' . number_format($definition->getPriorityFloat(), 1) . '</priority>';
             }
 
             if ($definition->getChangeFrequency() !== null) {
                 $xml .= '<changefreq>' . $definition->getChangeFrequency() . '</changefreq>';
+            }
+
+            foreach ($definition->getImages() as $image) {
+                $xml .= '<image:image>';
+                $xml .= '<image:loc>'
+                    . htmlspecialchars($image->getUrl(), ENT_XML1, 'UTF-8')
+                    . '</image:loc>';
+
+                if ($image->getTitle() !== null) {
+                    $xml .= '<image:title>'
+                        . htmlspecialchars($image->getTitle(), ENT_XML1, 'UTF-8')
+                        . '</image:title>';
+                }
+
+                $xml .= '</image:image>';
             }
 
             $xml .= '</url>';
@@ -284,47 +297,41 @@ final class SitemapGenerator implements SitemapGeneratorInterface
         return $flatArray;
     }
 
-    /**
-     * @param mixed $value
-     */
-    private function updateCache(string $key, $value): void
+    private function updateCache(string $key, mixed $value): void
     {
-        if ($this->cacheForever) {
+        if ($this->sitemapConfig->isCacheForever()) {
             $this->cache->forever($key, $value);
         }
 
-        $this->cache->put($key, $value, $this->cacheTime);
+        $this->cache->put($key, $value, $this->sitemapConfig->getCacheTime());
     }
 
     private function rememberDefinitionsFromCache(): Definitions
     {
         /** @var Definitions $definitions */
-        $definitions = $this->rememberFromCache(self::CACHE_DEFINITIONS, function (): Definitions {
+        $definitions = $this->rememberFromCache($this->sitemapConfig->getCacheKeyDefinitions(), function (): Definitions {
             return $this->getDefinitions();
         });
 
         return $definitions;
     }
 
-    /**
-     * @return mixed
-     */
-    private function rememberFromCache(string $key, Closure $closure)
+    private function rememberFromCache(string $key, Closure $closure): mixed
     {
-        if ($this->cacheForever) {
+        if ($this->sitemapConfig->isCacheForever()) {
             return $this->cache->rememberForever($key, $closure);
         }
 
-        return $this->cache->remember($key, $this->cacheTime, $closure);
+        return $this->cache->remember($key, $this->sitemapConfig->getCacheTime(), $closure);
     }
 
     private function invalidateSitemapCache(): bool
     {
-        return $this->cache->forget(self::CACHE_KEY_SITEMAP);
+        return $this->cache->forget($this->sitemapConfig->getCacheKeySitemap());
     }
 
     private function invalidateDefinitionsCache(): bool
     {
-        return $this->cache->forget(self::CACHE_DEFINITIONS);
+        return $this->cache->forget($this->sitemapConfig->getCacheKeyDefinitions());
     }
 }
