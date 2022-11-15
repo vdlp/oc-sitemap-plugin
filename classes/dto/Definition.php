@@ -24,6 +24,11 @@ final class Definition implements Dto
     private ?Carbon $modifiedAt = null;
 
     /**
+     * @var ImageDefinition[]
+     */
+    private array $images = [];
+
+    /**
      * @throws InvalidPriority
      */
     public static function fromArray(array $data): Dto
@@ -51,7 +56,7 @@ final class Definition implements Dto
      */
     public function setPriority(?int $priority): Definition
     {
-        if ($priority >= 1 && $priority <= 10) {
+        if ($priority >= 0 && $priority <= 10) {
             $this->priority = $priority;
 
             return $this;
@@ -96,5 +101,30 @@ final class Definition implements Dto
     public function getModifiedAt(): ?Carbon
     {
         return $this->modifiedAt;
+    }
+
+    /**
+     * @return ImageDefinition[]
+     */
+    public function getImages(): array
+    {
+        return $this->images;
+    }
+
+    /**
+     * @param ImageDefinition[] $images
+     */
+    public function setImages(array $images): Definition
+    {
+        $this->images = $images;
+
+        return $this;
+    }
+
+    public function addImage(ImageDefinition $image): Definition
+    {
+        $this->images[] = $image;
+
+        return $this;
     }
 }
