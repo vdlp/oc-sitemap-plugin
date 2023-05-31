@@ -18,8 +18,8 @@
 
 ## Requirements
 
-- PHP 8.0 or higher
-- October CMS 1.1 or higher
+- PHP 8.0.2 or higher
+- Supports October CMS 3.x only
 
 ## Usage
 
@@ -163,8 +163,8 @@ You can change the amount of seconds the sitemap is cached in your `.env` file.
 You can also cache the sitemap forever.
 
  ```dotenv
-VDLP_SITEMAP_CACHE_TIME = 3600
-VDLP_SITEMAP_CACHE_FOREVER = false
+VDLP_SITEMAP_CACHE_TIME=3600
+VDLP_SITEMAP_CACHE_FOREVER=false
 ```
 
 ### ConfigResolver

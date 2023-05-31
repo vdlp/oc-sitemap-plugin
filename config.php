@@ -38,6 +38,7 @@ return [
      | Configure how the sitemap config should be resolved.
      |
      */
+
     'config_resolver' => StaticConfigResolver::class,
 
 ];
