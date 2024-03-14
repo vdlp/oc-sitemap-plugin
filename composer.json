@@ -14,6 +14,9 @@
         "composer/installers": "^1.0 || ^2.0",
         "october/rain": "^3.0"
     },
+    "require-dev": {
+        "ergebnis/composer-normalize": "^2.42"
+    },
     "suggest": {
         "vdlp/oc-sitemapgenerators-plugin": "Adds pre-built sitemap generators for your October CMS website."
     },
@@ -23,17 +26,10 @@
             "url": "https://gateway.octobercms.com"
         }
     ],
-    "minimum-stability": "stable",
-    "archive": {
-        "exclude": [
-            ".gitattributes",
-            ".github",
-            ".gitignore"
-        ]
-    },
     "config": {
         "allow-plugins": {
-            "composer/installers": true
+            "composer/installers": true,
+            "ergebnis/composer-normalize": true
         }
     }
 }
