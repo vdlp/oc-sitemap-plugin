@@ -19,7 +19,7 @@
 ## Requirements
 
 - PHP 8.0.2 or higher
-- Supports October CMS 3.x only
+- Supports October CMS `3.x` or `4.x`
 
 ## Usage
 
