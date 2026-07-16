@@ -3,6 +3,7 @@
     "description": "A sitemap.xml generator for October CMS.",
     "license": "GPL-2.0-only",
     "type": "october-plugin",
+    "abandoned": true,
     "authors": [
         {
             "name": "Van der Let & Partners",
